@@ -18,3 +18,5 @@ Follow these steps to obtain one:
 5. In the SETTINGS section of the userscript, replace the "myClientID" and "myClientSecret" with your "Client ID" and "Client Secret". Save the userscript and reload the webpage.
 
 Use Tampermonkey or Violentmonkey to install.
+
+Adapted from: https://medium.com/swlh/creating-waveforms-out-of-spotify-tracks-b22030dd442b to make it work on spotify.com.
