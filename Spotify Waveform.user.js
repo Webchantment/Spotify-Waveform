@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Spotify Waveform
 // @namespace    https://greasyfork.org/en/users/943407-webchantment
-// @version      1.0
+// @version      1.1
 // @description  Display Waveforms for Tracks on Spotify
 // @author       Webchantment
 // @match        https://open.spotify.com/*
@@ -21,31 +21,69 @@
 	let color = "lightgrey";
 	//********************************************************//
 
+	let playObserver;
 	let nowPlayingLink;
 	let progressDiv;
 	let firstLoad = true;
 
-	const observer = new MutationObserver((mutationsList, observer) =>
+	let adObserver;
+	let adDeteted = false;
+
+	const nowPlayingDiv = "#main > div > div > div.Root__now-playing-bar > footer > div > div > div";
+
+	init();
+
+	function init()
 	{
-		if (firstLoad)
+		playObserver = new MutationObserver(() =>
 		{
-			nowPlayingLink = document.querySelector("#main > div > div.Root__top-container > div.Root__now-playing-bar > footer > div > div > div > div > div > a");
-			progressDiv = document.querySelector("#main > div > div.Root__top-container > div.Root__now-playing-bar > footer > div > div > div > div.playback-bar > div > div");
-		}
+			if (firstLoad)
+			{
+				nowPlayingLink = document.querySelector(nowPlayingDiv + " > div > div > a");
+				progressDiv = document.querySelector(nowPlayingDiv + " > div.playback-bar > div > div");
+			}
 
-		if (nowPlayingLink && progressDiv)
-		{
-			observer.disconnect();
-			firstLoad = false;
+			if (nowPlayingLink && progressDiv)
+			{
+				playObserver.disconnect();
+				firstLoad = false;
 
-			progressDiv.style.backgroundImage = "";
-			console.log("loading waveform...");
-			loadWaveform();
+				progressDiv.style.backgroundImage = "";
+				console.log("loading waveform...");
+				loadWaveform();
 
-			observer.observe(nowPlayingLink, { attributeFilter: ["href"] });
-		}
-	});
-	observer.observe(document.body, { childList: true, subtree: true });
+				playObserver.observe(nowPlayingLink, { attributeFilter: ["href"] });
+
+				if (!adObserver)
+				{
+					adObserver = new MutationObserver(() =>
+					{
+						const adDiv = document.querySelector(nowPlayingDiv + "[aria-label='Advertisement']");
+
+						if (adDiv && !adDeteted)
+						{
+							adDeteted = true;
+							console.log("ads started.");
+
+							playObserver.disconnect();
+							firstLoad = true;
+
+							progressDiv.style.backgroundImage = "";
+						}
+						else if (!adDiv && adDeteted)
+						{
+							adDeteted = false;
+							console.log("ads finished.");
+
+							init();
+						}
+					});
+					adObserver.observe(document.querySelector(nowPlayingDiv), { attributeFilter: ["aria-label"] });
+				}
+			}
+		});
+		playObserver.observe(document.body, { childList: true, subtree: true });
+	}
 
 	async function loadWaveform()
 	{
