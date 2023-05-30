@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Spotify Waveform
 // @namespace    https://greasyfork.org/en/users/943407-webchantment
-// @version      1.1
+// @version      1.2
 // @description  Display Waveforms for Tracks on Spotify
 // @author       Webchantment
 // @match        https://open.spotify.com/*
@@ -29,7 +29,7 @@
 	let adObserver;
 	let adDeteted = false;
 
-	const nowPlayingDiv = "#main > div > div > div.Root__now-playing-bar > footer > div > div > div";
+	const nowPlayingDiv = "footer > div > div > div";
 
 	init();
 
@@ -47,6 +47,13 @@
 			{
 				playObserver.disconnect();
 				firstLoad = false;
+
+				//check for API key
+				if (clientID === "myClientID" || clientSecret === "myClientSecret")
+				{
+					alert("Spotify Waveform: Please enter clientID and clientSecret");
+					return;
+				}
 
 				progressDiv.style.backgroundImage = "";
 				console.log("loading waveform...");
